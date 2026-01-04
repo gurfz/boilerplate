@@ -1,4 +1,4 @@
-// app/index.tsx – Unified Paywall: RevenueCat on iOS, Stripe on Web
+// app/index.tsx – Unified Gurfz Cyberpunk Dashboard (RevenueCat Paywall on All Platforms)
 
 import { StyleSheet, Text, View, TouchableOpacity, Animated, SafeAreaView, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -6,25 +6,17 @@ import Purchases from 'react-native-purchases';
 import PurchasesUI from 'react-native-purchases-ui';
 import { useEffect, useRef, useState } from 'react';
 
-// STRIPE PAYMENT LINK — REPLACE WITH YOUR REAL ONE
-const STRIPE_LINK = "https://buy.stripe.com/YOUR_REAL_LINK_HERE"; // Create in Stripe dashboard
-
 export default function Index() {
   const [isPremium, setIsPremium] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkPremium = async () => {
-      if (Platform.OS === 'web') {
-        setLoading(false);
-        return; // Web uses Stripe — no RevenueCat check
-      }
-
       try {
         const info = await Purchases.getCustomerInfo();
         setIsPremium(!!info.entitlements.active['premium_access']);
       } catch (e) {
-        console.log("No premium (normal in Expo Go):", e);
+        console.log("No premium yet (normal in Expo Go/web preview):", e);
       } finally {
         setLoading(false);
       }
@@ -34,59 +26,57 @@ export default function Index() {
   }, []);
 
   const handleSubscribe = async () => {
-    if (Platform.OS === 'web') {
-      window.location.href = STRIPE_LINK; // Real Stripe subscription
-    } else {
-      try {
-        const result = await PurchasesUI.presentPaywall();
-        if (result?.customerInfo?.entitlements?.active['premium_access']) {
-          setIsPremium(true);
-        }
-      } catch (e) {
-        console.log("Paywall dismissed");
+    try {
+      const result = await PurchasesUI.presentPaywall();
+
+      if (result?.customerInfo?.entitlements?.active['premium_access']) {
+        setIsPremium(true);
       }
+    } catch (e) {
+      console.log("Paywall dismissed or preview mode:", e);
     }
   };
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.loading}>Loading Gurfz...</Text>
+        <Text style={styles.loading}>Initializing Gurfz...</Text>
       </SafeAreaView>
     );
   }
 
   if (!isPremium) {
+    // Unified Paywall Screen (same look on mobile & web)
     return (
       <SafeAreaView style={styles.paywallContainer}>
         <StatusBar style="light" />
         <View style={styles.paywallContent}>
-          <Text style={styles.paywallTitle}>Unlock Gurfz Premium</Text>
-          <Text style={styles.paywallSubtitle}>Full access to innovation tools</Text>
+          <Text style={styles.paywallTitle}>GURFZ Premium</Text>
+          <Text style={styles.paywallSubtitle}>Unlock the future of innovation</Text>
 
           <View style={styles.features}>
-            <Text style={styles.feature}>✓ AI-powered insights</Text>
-            <Text style={styles.feature}>✓ Hardware sync</Text>
-            <Text style={styles.feature}>✓ Unlimited projects</Text>
-            <Text style={styles.feature}>✓ Priority support</Text>
+            <Text style={styles.feature}>✓ Advanced AI insights</Text>
+            <Text style={styles.feature}>✓ Real-time hardware control</Text>
+            <Text style={styles.feature}>✓ Unlimited projects & data</Text>
+            <Text style={styles.feature}>✓ Priority support & updates</Text>
+            <Text style={styles.feature}>✓ Zero ads</Text>
           </View>
 
           <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
-            <Text style={styles.subscribeText}>
-              {Platform.OS === 'web' ? 'Subscribe with Stripe' : 'Subscribe Now'} – $9.99/month
-            </Text>
+            <Text style={styles.subscribeText}>Start Subscription – $9.99/month</Text>
           </TouchableOpacity>
 
-          <Text style={styles.terms}>7-day free trial • Cancel anytime</Text>
+          <Text style={styles.trial}>7-day free trial • Cancel anytime</Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  // Premium Dashboard
+  // Premium Floating Dashboard
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
+
       <Text style={styles.dashboardTitle}>GURFZ</Text>
       <Text style={styles.dashboardSubtitle}>Premium Dashboard</Text>
 
@@ -99,39 +89,47 @@ export default function Index() {
   );
 }
 
-// FloatingCard component (same as before)
+// Floating Card with bounce & glow on touch/hover
 const FloatingCard = ({ title, value, subtitle }) => {
   const floatY = useRef(new Animated.Value(0)).current;
-  const pressScale = useRef(new Animated.Value(1)).current;
-  const glowOpacity = useRef(new Animated.Value(0.3)).current;
+  const scale = useRef(new Animated.Value(1)).current;
+  const glow = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(floatY, { toValue: -15, duration: 4000, useNativeDriver: true }),
-        Animated.timing(floatY, { toValue: 15, duration: 4000, useNativeDriver: true }),
+        Animated.timing(floatY, { toValue: -20, duration: 4000, useNativeDriver: true }),
+        Animated.timing(floatY, { toValue: 20, duration: 4000, useNativeDriver: true }),
       ])
     ).start();
   }, []);
 
   const onPressIn = () => {
     Animated.parallel([
-      Animated.spring(pressScale, { toValue: 1.1, useNativeDriver: true }),
-      Animated.timing(glowOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 1.08, useNativeDriver: true }),
+      Animated.timing(glow, { toValue: 1, duration: 200, useNativeDriver: true }),
     ]).start();
     floatY.stopAnimation();
   };
 
   const onPressOut = () => {
     Animated.parallel([
-      Animated.spring(pressScale, { toValue: 1, useNativeDriver: true }),
-      Animated.timing(glowOpacity, { toValue: 0.3, duration: 400, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 1, useNativeDriver: true }),
+      Animated.timing(glow, { toValue: 0.3, duration: 400, useNativeDriver: true }),
     ]).start();
   };
 
   return (
     <TouchableOpacity activeOpacity={0.9} onPressIn={onPressIn} onPressOut={onPressOut}>
-      <Animated.View style={[styles.card, { transform: [{ translateY: floatY }, { scale: pressScale }], shadowOpacity: glowOpacity }]}>
+      <Animated.View
+        style={[
+          styles.card,
+          {
+            transform: [{ translateY: floatY }, { scale }],
+            shadowOpacity: glow,
+          },
+        ]}
+      >
         <Text style={styles.cardTitle}>{title}</Text>
         <Text style={styles.cardValue}>{value}</Text>
         <Text style={styles.cardSubtitle}>{subtitle}</Text>
@@ -141,21 +139,117 @@ const FloatingCard = ({ title, value, subtitle }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000000', alignItems: 'center', paddingTop: 60, gap: 40 },
-  paywallContainer: { flex: 1, backgroundColor: '#000000', justifyContent: 'center', alignItems: 'center', padding: 40 },
-  paywallContent: { alignItems: 'center', maxWidth: 400 },
-  paywallTitle: { fontSize: 48, fontWeight: '900', color: '#00FFFF', textAlign: 'center', marginBottom: 20, textShadowColor: '#00FFFF', textShadowRadius: 30 },
-  paywallSubtitle: { fontSize: 20, color: '#AAAAAA', textAlign: 'center', marginBottom: 40 },
-  features: { alignItems: 'flex-start', gap: 16, marginBottom: 50 },
-  feature: { fontSize: 18, color: '#00FFFF' },
-  subscribeButton: { backgroundColor: 'transparent', borderColor: '#00FFFF', borderWidth: 3, paddingVertical: 20, paddingHorizontal: 60, borderRadius: 999, minWidth: 300, shadowColor: '#00FFFF', shadowOpacity: 0.8, shadowRadius: 30, elevation: 20 },
-  subscribeText: { color: '#00FFFF', fontSize: 22, fontWeight: '800', textAlign: 'center' },
-  terms: { marginTop: 30, fontSize: 14, color: '#666666' },
-  loading: { flex: 1, color: '#00FFFF', fontSize: 24, textAlign: 'center' },
-  dashboardTitle: { fontSize: 64, fontWeight: '900', color: '#00FFFF', letterSpacing: 12, textShadowColor: '#00FFFF', textShadowRadius: 30 },
-  dashboardSubtitle: { fontSize: 24, color: '#00CCCC', marginBottom: 20 },
-  card: { backgroundColor: 'rgba(15, 20, 35, 0.8)', borderRadius: 28, padding: 28, width: 320, alignItems: 'center', borderWidth: 1, borderColor: '#00FFFF33', shadowColor: '#00FFFF', shadowOffset: { width: 0, height: 0 }, shadowRadius: 40, elevation: 20 },
-  cardTitle: { fontSize: 18, color: '#AAAAAA', marginBottom: 8 },
-  cardValue: { fontSize: 40, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 4 },
-  cardSubtitle: { fontSize: 16, color: '#00FFFF' },
+  container: {
+    flex: 1,
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    paddingTop: 60,
+    gap: 40,
+  },
+  paywallContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  paywallContent: {
+    alignItems: 'center',
+    maxWidth: 420,
+  },
+  paywallTitle: {
+    fontSize: 52,
+    fontWeight: '900',
+    color: '#00FFFF',
+    textAlign: 'center',
+    marginBottom: 20,
+    textShadowColor: '#00FFFF',
+    textShadowRadius: 40,
+  },
+  paywallSubtitle: {
+    fontSize: 22,
+    color: '#AAAAAA',
+    textAlign: 'center',
+    marginBottom: 48,
+  },
+  features: {
+    gap: 18,
+    marginBottom: 56,
+    alignItems: 'flex-start',
+  },
+  feature: {
+    fontSize: 19,
+    color: '#00FFFF',
+  },
+  subscribeButton: {
+    backgroundColor: 'transparent',
+    borderColor: '#00FFFF',
+    borderWidth: 3,
+    paddingVertical: 22,
+    paddingHorizontal: 70,
+    borderRadius: 999,
+    minWidth: 340,
+    shadowColor: '#00FFFF',
+    shadowOpacity: 0.9,
+    shadowRadius: 40,
+    elevation: 25,
+  },
+  subscribeText: {
+    color: '#00FFFF',
+    fontSize: 23,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  trial: {
+    marginTop: 32,
+    fontSize: 17,
+    color: '#888888',
+  },
+  loading: {
+    flex: 1,
+    color: '#00FFFF',
+    fontSize: 26,
+    textAlign: 'center',
+  },
+  dashboardTitle: {
+    fontSize: 72,
+    fontWeight: '900',
+    color: '#00FFFF',
+    letterSpacing: 16,
+    textShadowColor: '#00FFFF',
+    textShadowRadius: 50,
+  },
+  dashboardSubtitle: {
+    fontSize: 26,
+    color: '#00CCCC',
+    marginBottom: 30,
+  },
+  card: {
+    backgroundColor: 'rgba(10, 15, 30, 0.85)',
+    borderRadius: 32,
+    padding: 32,
+    width: 340,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#00FFFF22',
+    shadowColor: '#00FFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 50,
+    elevation: 30,
+  },
+  cardTitle: {
+    fontSize: 19,
+    color: '#AAAAAA',
+    marginBottom: 10,
+  },
+  cardValue: {
+    fontSize: 44,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 6,
+  },
+  cardSubtitle: {
+    fontSize: 17,
+    color: '#00FFFF',
+  },
 });
