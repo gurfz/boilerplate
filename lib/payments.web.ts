@@ -4,7 +4,7 @@ let initialized = false;
 
 const init = async () => {
   if (initialized) return;
-  await Purchases.configure("rcb_uOLZcfYkUMLuQYOFlJIjDSBPzeel"); // From RevenueCat dashboard
+  await Purchases.configure("rcb_sb_ZiQKhOxludWeUlPrYqesfCdTX"); // From RevenueCat dashboard
   initialized = true;
 };
 
